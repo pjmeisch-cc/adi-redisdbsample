@@ -14,9 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author P.J. Meisch (peter-josef.meisch@codecentric.de)
@@ -25,11 +23,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public class EntryController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EntryController.class);
-    private static final Map<String, String> dummyDB = new ConcurrentHashMap<>();
-    private final StringRedisTemplate stringRedisTemplate;
 
-    public EntryController(StringRedisTemplate stringRedisTemplate) {
+    private final StringRedisTemplate stringRedisTemplate;
+    private final EntryRepository entryRepository;
+
+    public EntryController(StringRedisTemplate stringRedisTemplate,
+                           EntryRepository entryRepository) {
         this.stringRedisTemplate = stringRedisTemplate;
+        this.entryRepository = entryRepository;
     }
 
     @GetMapping("/get/{key}")
@@ -57,21 +58,25 @@ public class EntryController {
             String value = opsForValue.get(key);
             entry = new Entry(key, value);
         }
-        
+
         LOGGER.info("{}: {}", entry, message);
         return ResponseEntity.ok(new Response(entry, message));
 
     }
 
     private Optional<Entry> fromDB(String key) {
-        String value = dummyDB.get(key);
-        return (value != null) ? Optional.of(new Entry(key, value)) : Optional.empty();
+        final Optional<DBEntry> optionalDbEntry = entryRepository.findByKey(key);
+        if (optionalDbEntry.isPresent()) {
+            final DBEntry dbEntry = optionalDbEntry.get();
+            return Optional.of(new Entry(dbEntry.getKey(), dbEntry.getValue()));
+        }
+        return Optional.empty();
     }
 
     @PostMapping("/put")
     public ResponseEntity<?> store(@RequestBody final Entry entry) {
         LOGGER.info("storing {}", entry);
-        dummyDB.put(entry.getKey(), entry.getValue());
+        entryRepository.save(new DBEntry(entry.getKey(), entry.getValue()));
         return ResponseEntity.ok().build();
     }
 }
