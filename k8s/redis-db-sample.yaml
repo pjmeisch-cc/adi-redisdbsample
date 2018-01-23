@@ -1,4 +1,17 @@
 ---
+kind: ConfigMap
+apiVersion: v1
+
+metadata:
+  name: redis-db-sample
+data:
+  application.properties: |
+    #set your ip for the services here!
+    spring.redis.host=192.168.99.1
+    spring.datasource.url=jdbc:mysql://192.168.99.1:3306/debe?useSSL=false
+    spring.datasource.username=debe
+    spring.datasource.password=debe
+---
 kind: Deployment
 apiVersion: extensions/v1beta1
 
@@ -17,9 +30,17 @@ spec:
       labels:
         app: redis-db-sample
     spec:
+      volumes:
+        - name: config-volume
+          configMap:
+            name: redis-db-sample
       containers:
         - name: redis-db-sample
           image: sothawo/redis-db-sample:0.0.1
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config
           ports:
           - name: redis-db-sample
             containerPort: 8080
@@ -31,8 +52,8 @@ spec:
               cpu: 1
               memory: 700M
           env:
-            - name: SPRING_REDIS_HOST
-              value: redis
+            - name: SPRING_CONFIG_LOCATION
+              value: /config/
 ---
 kind: Service
 apiVersion: v1
