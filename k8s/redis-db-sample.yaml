@@ -1,0 +1,51 @@
+---
+kind: Deployment
+apiVersion: extensions/v1beta1
+
+metadata:
+  name: redis-db-sample
+  labels:
+    app: redis-db-sample
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-db-sample
+  template:
+    metadata:
+      labels:
+        app: redis-db-sample
+    spec:
+      containers:
+        - name: redis-db-sample
+          image: sothawo/redis-db-sample:0.0.1
+          ports:
+          - name: redis-db-sample
+            containerPort: 8080
+          resources:
+            requests:
+              cpu: 0.1
+              memory: 500M
+            limits:
+              cpu: 1
+              memory: 700M
+          env:
+            - name: SPRING_REDIS_HOST
+              value: redis
+---
+kind: Service
+apiVersion: v1
+
+metadata:
+  name: redis-db-sample
+
+spec:
+  selector:
+    app: redis-db-sample
+
+  type: NodePort
+
+  ports:
+    - port: 8080
+      targetPort: 8080
