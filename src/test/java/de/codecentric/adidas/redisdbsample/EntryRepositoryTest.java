@@ -26,7 +26,7 @@ public class EntryRepositoryTest {
     private EntryRepository entryRepository;
 
     @Test
-    public void findByKey() {
+    public void findByExistingKey() {
         final DBEntry dbEntry = new DBEntry("hello", "world");
         entityManager.persist(dbEntry);
 
@@ -36,5 +36,14 @@ public class EntryRepositoryTest {
         assertThat(optionalDbEntry.isPresent()).isTrue();
         assertThat(optionalDbEntry.get().getKey()).isEqualToIgnoringCase("hello");
         assertThat(optionalDbEntry.get().getValue()).isEqualToIgnoringCase("world");
+    }
+
+    @Test
+    public void findByNotExistingKey() {
+
+        final Optional<DBEntry> optionalDbEntry = entryRepository.findByKey("hello");
+
+        assertThat(optionalDbEntry).isNotNull();
+        assertThat(optionalDbEntry.isPresent()).isFalse();
     }
 }
