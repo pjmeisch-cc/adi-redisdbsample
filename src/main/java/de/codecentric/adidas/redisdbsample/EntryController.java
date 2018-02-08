@@ -59,8 +59,9 @@ public class EntryController {
             entry = new Entry(key, value);
         }
 
-        LOGGER.info("{}: {}", entry, message);
-        return ResponseEntity.ok(new Response(entry, message));
+        final Response response = new Response(entry, message);
+        LOGGER.info("{}", response);
+        return ResponseEntity.ok(response);
 
     }
 

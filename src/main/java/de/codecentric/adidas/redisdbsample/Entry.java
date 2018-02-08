@@ -3,6 +3,8 @@
  */
 package de.codecentric.adidas.redisdbsample;
 
+import java.util.Objects;
+
 /**
  * @author P.J. Meisch (peter-josef.meisch@codecentric.de)
  */
@@ -16,14 +18,6 @@ public class Entry {
     public Entry(String key, String value) {
         this.key = key;
         this.value = value;
-    }
-
-    @Override
-    public String toString() {
-        return "Entry{" +
-                "key='" + key + '\'' +
-                ", value='" + value + '\'' +
-                '}';
     }
 
     public String getKey() {
@@ -40,5 +34,28 @@ public class Entry {
 
     public void setValue(String value) {
         this.value = value;
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(key, value);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Entry entry = (Entry) o;
+        return Objects.equals(key, entry.key) &&
+                Objects.equals(value, entry.value);
+    }
+
+    @Override
+    public String toString() {
+        return "Entry{" +
+                "key='" + key + '\'' +
+                ", value='" + value + '\'' +
+                '}';
     }
 }
